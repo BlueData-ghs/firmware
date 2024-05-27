@@ -1,10 +1,14 @@
 use std::{
+    fs::{self, File},
+    os,
+    path::{Path, PathBuf},
     process::{exit, Command},
     str,
 };
 
 use anyhow::{Context, Result};
-use color_print::cprintln;
+use color_print::{cformat, cprintln};
+use dialoguer::Confirm;
 
 pub fn verify_drive() -> Result<()> {
     // Using lsblk check to make sure that drive is mounted
@@ -19,4 +23,23 @@ pub fn verify_drive() -> Result<()> {
     }
     cprintln!("Interface for recording data is <green>mounted and ready</green>");
     Ok(())
+}
+
+pub fn create_csv_file(team_number: &u32) -> Result<PathBuf> {
+    let path = Path::new("/media/pi/bluedata").join(format!("team-{}.csv", team_number));
+    if path.exists() {
+        println!();
+        let confirmation = Confirm::new()
+            .with_prompt(cformat!(
+                "<red>CSV file seems to already exist! Is team {} going again?</red>",
+                team_number
+            ))
+            .interact()
+            .context("Failed to ask user to confirm redo of team data")?;
+        if !confirmation {
+            cprintln!("<red>Please rerun program</red>");
+        }
+    }
+    File::create(&path).context("Failed to create team file")?;
+    Ok(path)
 }

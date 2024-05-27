@@ -7,7 +7,7 @@ fn main() {
     db::verify_drive().expect("Failed to verify drive");
     print_header();
     let team_number = ask::team_number().expect("Failed to ask user for team number");
-    dbg!(team_number);
+    db::create_csv_file(&team_number).expect("Failed to create CSV file");
 
     let depth = ask::depth().expect("Failed to ask for depth");
     dbg!(depth);
