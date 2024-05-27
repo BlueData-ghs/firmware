@@ -1,8 +1,11 @@
-const int tempPin = 0; // analog pin 0
+// Gavin Palmer, May 2024
+
+const int tempPin = A0; // analog pin 0
 
 void setup()
 {
   Serial.begin(9600);
+  pinMode(tempPin, INPUT);
 }
 
 void loop()
@@ -14,9 +17,9 @@ void loop()
   float tempC = tempK - 273.15; // Convert Kelvin to Celcius
 
   // Display Temperature in C
-  Serial.print("Temp: ");
-  Serial.print(tempC);
-  Serial.println("C");
+  //Serial.print("Temp: ");
+  Serial.println(tempC);
+  //Serial.println("C");
 
   delay(1000);
 }
