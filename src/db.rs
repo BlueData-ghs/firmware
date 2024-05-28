@@ -52,10 +52,14 @@ pub fn write_measurement(csv_file: &mut Writer<File>, measurement: Measurement) 
         .write_record(&[
             measurement.depth.to_string(),
             measurement.temp.to_string(),
+            measurement.light.to_string(),
             measurement.salinity.to_string(),
             measurement.time.to_string(),
         ])
         .context("Failed to write data to CSV file")?;
+    csv_file
+        .flush()
+        .context("Failed to flush data to CSV file")?;
     println!();
     cprintln!("<green>Successfully recorded the following data:</green>");
     cprintln!("\t1. <blue>Depth</blue> {}m", measurement.depth);
