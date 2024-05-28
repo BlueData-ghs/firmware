@@ -5,5 +5,7 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.86"
+chrono = "0.4.38"
 color-print = "0.3.6"
+csv = "1.3.0"
 dialoguer = "0.11.0"

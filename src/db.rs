@@ -1,14 +1,16 @@
 use std::{
-    fs::{self, File},
-    os,
-    path::{Path, PathBuf},
+    fs::File,
+    path::Path,
     process::{exit, Command},
     str,
 };
 
 use anyhow::{Context, Result};
 use color_print::{cformat, cprintln};
+use csv::{Writer, WriterBuilder};
 use dialoguer::Confirm;
+
+use crate::sensors::Measurement;
 
 pub fn verify_drive() -> Result<()> {
     // Using lsblk check to make sure that drive is mounted
@@ -25,7 +27,7 @@ pub fn verify_drive() -> Result<()> {
     Ok(())
 }
 
-pub fn create_csv_file(team_number: &u32) -> Result<PathBuf> {
+pub fn create_csv_file(team_number: &u32) -> Result<Writer<File>> {
     let path = Path::new("/media/pi/bluedata").join(format!("team-{}.csv", team_number));
     if path.exists() {
         println!();
@@ -40,6 +42,29 @@ pub fn create_csv_file(team_number: &u32) -> Result<PathBuf> {
             cprintln!("<red>Please rerun program</red>");
         }
     }
-    File::create(&path).context("Failed to create team file")?;
-    Ok(path)
+    Ok(WriterBuilder::new()
+        .from_path(path)
+        .context("Failed to create writer builder for CSV file")?)
+}
+
+pub fn write_measurement(csv_file: &mut Writer<File>, measurement: Measurement) -> Result<()> {
+    csv_file
+        .write_record(&[
+            measurement.depth.to_string(),
+            measurement.temp.to_string(),
+            measurement.salinity.to_string(),
+            measurement.time.to_string(),
+        ])
+        .context("Failed to write data to CSV file")?;
+    println!();
+    cprintln!("<green>Successfully recorded the following data:</green>");
+    cprintln!("\t1. <blue>Depth</blue> {}m", measurement.depth);
+    cprintln!("\t2. <yellow>Temperature</yellow> {} °C", measurement.temp);
+    cprintln!(
+        "\t3. <magenta>Light</magenta> {}%",
+        measurement.light * 100.0
+    );
+    cprintln!("\t4. <cyan>Salinity</cyan> {} g/L", measurement.salinity);
+    cprintln!("\t5. Time {}", measurement.time.format("%x %r"));
+    Ok(())
 }
